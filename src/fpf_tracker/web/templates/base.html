@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}FPF Minutos{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">FPF <b>Minutos</b></a>
+  <span class="muted small">Minutos, convocatórias, golos e cartões a partir das fichas de jogo da FPF</span>
+  <span class="priv">Dados de menores · acesso local</span>
+</header>
+<main>
+{% if club %}
+<div class="eyebrow">{{ club.name }}</div>
+<nav class="sub" aria-label="Secções do clube">
+  <a href="/clubs/{{ club.id }}" class="{{ 'on' if nav == 'home' }}">Visão geral</a>
+  {% for lg in leagues or [] %}
+  <a href="/clubs/{{ club.id }}/league?name={{ lg.league|urlencode }}" class="{{ 'on' if nav == 'league' and league == lg.league }}">{{ lg.league }}</a>
+  {% endfor %}
+  <a href="/clubs/{{ club.id }}/global" class="{{ 'on' if nav == 'global' }}">Resumo global</a>
+  <a href="/clubs/{{ club.id }}/matches" class="{{ 'on' if nav == 'matches' }}">Jogos</a>
+  <a href="/clubs/{{ club.id }}/identity" class="{{ 'on' if nav == 'identity' }}">Identidades</a>
+  <a href="/clubs/{{ club.id }}/upload" class="{{ 'on' if nav == 'upload' }}">Carregar jogos</a>
+</nav>
+{% endif %}
+{% block body %}{% endblock %}
+</main>
+<footer>Minutos em valores inteiros (a FPF não regista segundos). Esta aplicação não substitui a ficha oficial.</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>

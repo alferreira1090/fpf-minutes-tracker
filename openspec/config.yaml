@@ -1,0 +1,27 @@
+schema: spec-driven
+
+context: |
+  Product: a web app/service that turns FPF (Federação Portuguesa de Futebol) match-report HTML pages
+  into per-player minutes, call-up, goal and yellow-card statistics for football clubs.
+  It replaces the Excel tracker produced by the "fpf-player-match-tracker" skill; that skill's
+  calculation rules are the functional baseline and every rule in it is a requirement here.
+  Constraints that cannot be inferred from the code:
+  - Domain language is Portuguese. User-facing UI text and any deliverable for Portuguese audiences
+    use European Portuguese (pt-PT), never Brazilian Portuguese. Code, specs and docs are in English.
+  - Uploaded FPF HTML is untrusted input. Never execute it, never render it back unescaped.
+  - Data includes names of minors (youth squads). Treat as personal data: no public exposure,
+    no third-party analytics, authentication is mandatory before any non-localhost deployment.
+  - Never silently merge different people, never invent events to force reconciliations;
+    surface ambiguities as explicit warnings stored with the match.
+  - Call-up (convocado) evidence is stored per player-match record; it can never be derived
+    from "minutes > 0" alone.
+  - The reference regression sample is SC Braga J1-J6 (109/114 = 95.6%; 1,158 bench minutes over
+    48 bench listings = 24.1 min) and FC Famalicao Sub-15/Sub-16. These are tests, never defaults.
+
+rules:
+  proposal:
+    - State what is explicitly out of scope.
+  specs:
+    - Express rules as observable behaviour with testable scenarios; keep framework names out.
+  tasks:
+    - Every task states how it is verified (test name or command).

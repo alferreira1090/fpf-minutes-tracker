@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Os seus clubes</h1>
+<p class="lede">Carregue as fichas de jogo da FPF guardadas em HTML e consulte minutos, convocatórias, golos e cartões por escalão, com o resumo global do clube.</p>
+{% if clubs %}
+<div class="grid">
+  {% for c in clubs %}
+  <div class="card">
+    <h3><a href="/clubs/{{ c.id }}">{{ c.name }}</a></h3>
+    <div class="kv"><span>Jogos</span><span class="mono">{{ c.matches }}</span></div>
+    <div class="kv"><span>Escalões / ligas</span><span class="mono">{{ c.leagues }}</span></div>
+    <div class="kv"><span>Última atualização</span><span class="mono">{{ c.last_update[:10] if c.last_update else '—' }}</span></div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">Ainda não há clubes. Crie o primeiro e carregue a primeira ficha de jogo.</div>
+{% endif %}
+<h2>Novo clube</h2>
+<form method="post" action="/clubs" class="inline">
+  <div><label for="n">Nome do clube (como aparece na FPF)</label><input id="n" type="text" name="name" required maxlength="120" size="34" placeholder="Fc Famalicão"></div>
+  <button type="submit">Criar clube</button>
+</form>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% set nav = 'matches' %}
+{% block title %}{{ m.home }} – {{ m.away }} · {{ club.name }}{% endblock %}
+{% block body %}
+{% set T = m.nominal + m.s1 + m.s2 %}
+{% set PT = m.pub_nominal + m.pub_s1 + m.pub_s2 %}
+<h1>{{ m.home }} <span class="mono">{{ m.score_home if m.score_home is not none else '?' }}–{{ m.score_away if m.score_away is not none else '?' }}</span> {{ m.away }}</h1>
+<p class="lede">{{ m.match_date|dmy }} · {{ m.competition }} · escalão/liga «{{ m.league }}» · {{ 'casa' if m.side == 'home' else 'fora' }}</p>
+{% if error %}<div class="banner bad"><b>Correção rejeitada.</b> {{ error }}</div>{% endif %}
+{% if m.expected_minutes == m.actual_minutes %}
+<div class="banner ok"><b>Reconciliado:</b> soma dos minutos dos jogadores = {{ m.actual_minutes }} = 11 × {{ T }}{% if m.dismissal_loss %} − {{ m.dismissal_loss }} (expulsões){% endif %}.</div>
+{% else %}
+<div class="banner bad"><b>Não reconcilia:</b> soma dos minutos {{ m.actual_minutes }}, esperado {{ m.expected_minutes }} (diferença {{ m.actual_minutes - m.expected_minutes }}). Nada foi ajustado; veja os avisos.</div>
+{% endif %}
+
+<div class="grid">
+  <div class="card">
+    <h3>Duração</h3>
+    <div class="kv"><span>Nominal</span><span class="mono">{{ m.nominal }} min</span></div>
+    <div class="kv"><span>Compensação 1.ª / 2.ª parte</span><span class="mono">{{ m.s1 }} / {{ m.s2 }}</span></div>
+    <div class="kv"><span>Total considerado</span><span class="mono"><b>{{ T }} min</b></span></div>
+    {% if m.override %}<div class="banner warn small">Corrigida pelo utilizador. Publicado na ficha: {{ m.pub_nominal }} + {{ m.pub_s1 }} + {{ m.pub_s2 }} = {{ PT }} min.</div>
+    <form method="post" action="/matches/{{ m.id }}/duration/clear"><button class="ghost" type="submit">Repor valores da ficha</button></form>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Corrigir duração</h3>
+    <form method="post" action="/matches/{{ m.id }}/duration" class="inline">
+      <div><label for="nom">Duração nominal</label><input id="nom" type="number" name="nominal" min="10" max="150" value="{{ m.nominal }}" required style="width:6rem"></div>
+      <div><label for="s1">Comp. 1.ª</label><input id="s1" type="number" name="s1" min="0" max="30" value="{{ m.s1 }}" style="width:5rem"></div>
+      <div><label for="s2">Comp. 2.ª</label><input id="s2" type="number" name="s2" min="0" max="30" value="{{ m.s2 }}" style="width:5rem"></div>
+      <button type="submit">Recalcular</button>
+    </form>
+    <p class="muted small">Recusada se algum evento ficar fora do jogo corrigido.</p>
+  </div>
+  <div class="card">
+    <h3>Origem</h3>
+    <div class="kv"><span>Ficheiro</span><span class="mono">{{ m.source_name }}</span></div>
+    <div class="kv"><span>SHA-256</span><span class="mono" title="{{ m.source_sha256 }}">{{ m.source_sha256[:12] }}…</span></div>
+    <div class="kv"><span>Carregado</span><span class="mono">{{ m.uploaded_at[:16]|replace('T',' ') }} UTC</span></div>
+    {% if m.fpf_match_id %}<div class="kv"><span>N.º de jogo FPF</span><span class="mono">{{ m.fpf_match_id }}</span></div>{% endif %}
+  </div>
+</div>
+
+<h2>Jogadores</h2>
+<div class="table-wrap"><table data-sortable>
+<thead><tr><th class="sort">N.º</th><th class="name sort l">Jogador</th><th class="sort l">Situação</th><th class="sort">Entrada</th><th class="sort">Saída</th><th class="sort">Minutos</th><th class="sort">Golos</th><th class="sort">Autogolos</th><th class="sort">Amarelos</th><th class="sort">Vermelho</th></tr></thead>
+<tbody>
+{% for p in parts %}
+<tr>
+  <td class="num" data-v="{{ p.number or 0 }}">{{ p.number }}</td>
+  <td class="name" data-v="{{ p.display_name }}">{{ p.display_name }}{% if p.goalkeeper %} <span class="tag">GR</span>{% endif %}</td>
+  <td class="l" data-v="{{ p.status }}">{{ p.status }}</td>
+  <td class="num" data-v="{{ p.minute_in if p.minute_in is not none else -1 }}">{{ p.minute_in if p.minute_in is not none else '—' }}</td>
+  <td class="num" data-v="{{ p.minute_out if p.minute_out is not none else -1 }}">{{ p.minute_out if p.minute_out is not none else '—' }}</td>
+  <td class="num" data-v="{{ p.minutes }}"><span class="cell" style="background:{{ p.minutes|heat(T) }}"><b>{{ p.minutes }}</b></span></td>
+  <td class="num" data-v="{{ p.goals }}">{% if p.goals %}<span class="pill-g">{{ p.goals }}</span>{% else %}0{% endif %}</td>
+  <td class="num" data-v="{{ p.own_goals }}">{{ p.own_goals }}</td>
+  <td class="num" data-v="{{ p.yellows }}">{% if p.yellows %}<span class="pill-y">{{ p.yellows }}</span>{% else %}0{% endif %}</td>
+  <td class="c" data-v="{{ p.red }}">{{ '●' if p.red else '' }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+
+<h2>Avisos ({{ m.warnings|length }})</h2>
+{% if m.warnings %}
+<ul class="warns">
+{% for w in m.warnings %}
+  <li><b>{{ WARNING_TITLES.get(w.code, w.code) }}</b> <span class="code">{{ w.code }}</span><br><span class="muted small">{{ w.message }}</span></li>
+{% endfor %}
+</ul>
+{% else %}<p class="muted">Sem avisos.</p>{% endif %}
+{% endblock %}

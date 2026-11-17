@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_indicators.html" import block %}
+{% set nav = 'home' %}
+{% block title %}{{ club.name }} · FPF Minutos{% endblock %}
+{% block body %}
+<h1>{{ club.name }}</h1>
+{% if not leagues %}
+<div class="empty">Ainda não há jogos. <a class="btn" href="/clubs/{{ club.id }}/upload">Carregar a primeira ficha</a></div>
+{% else %}
+<h2>Indicadores de utilização — todos os escalões</h2>
+{{ block(ind) }}
+<h2>Escalões e ligas</h2>
+<div class="grid">
+{% for lg in leagues %}
+  {% set li = per_league[lg.league] %}
+  <div class="card">
+    <h3><a href="/clubs/{{ club.id }}/league?name={{ lg.league|urlencode }}">{{ lg.league }}</a></h3>
+    <div class="kv"><span>Jogos analisados</span><span class="mono">{{ lg.matches }}</span></div>
+    <div class="kv"><span>Período</span><span class="mono">{{ lg.first|dmy }} – {{ lg.last|dmy }}</span></div>
+    <div class="kv"><span>Convocados com minutos</span><span class="mono">{{ li.with_minutes.value|pct }} ({{ li.with_minutes.numerator }}/{{ li.with_minutes.denominator }})</span></div>
+    <div class="kv"><span>Min. médios por suplente</span><span class="mono">{{ li.bench_minutes.value|mins }}</span></div>
+  </div>
+{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

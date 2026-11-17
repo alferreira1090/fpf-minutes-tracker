@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_indicators.html" import block %}
+{% set nav = 'league' %}
+{% block title %}{{ league }} · {{ club.name }}{% endblock %}
+{% block body %}
+<h1>{{ league }}</h1>
+<p class="lede">{{ t.matches|length }} jogo(s) analisado(s) · {{ t.possible }} minutos possíveis por jogador. Clique num cabeçalho para ordenar.</p>
+{% if problems %}<div class="banner bad"><b>Inconsistências nas contagens:</b> {{ problems|join('; ') }}</div>{% endif %}
+<div class="legend">
+  <span>Minutos por jogo: <span class="scale"></span> 0 · metade · duração total</span>
+  <span><span class="ml">↑</span> suplente utilizado</span>
+  <span><span class="ml">0·</span> convocado, não utilizado</span>
+  <span><span class="none">—</span> não convocado</span>
+</div>
+<div class="table-wrap">
+<table data-sortable>
+<thead><tr>
+  <th class="name sort l">Jogador</th>
+  {% for m in t.matches %}<th title="{{ m.opponent }} · {{ m.date|dmy }} · {{ m.duration }} min"><a href="/matches/{{ m.id }}">vs {{ m.opponent }}<br><span class="mono small">{{ m.date|dmy }}</span></a></th>{% endfor %}
+  <th class="sort">Minutos</th><th class="sort">% min. possíveis</th><th class="sort">Golos</th><th class="sort">Amarelos</th><th class="sort">Jogos c/ minutos</th><th class="sort">Convocatórias</th>
+</tr></thead>
+<tbody>
+{% for p in t.players %}
+<tr>
+  <td class="name" data-v="{{ p.name }}">{{ p.name }}</td>
+  {% for m in t.matches %}
+    {% set c = p.cells.get(m.id) %}
+    {% if c is none %}<td class="c none" data-v="-1" title="Não convocado">—</td>
+    {% else %}
+    <td class="c mono" data-v="{{ c.minutes }}" title="{{ c.status }}"><span class="cell" style="background:{{ c.minutes|heat(m.duration) }}">
+      {%- if c.status == 'Suplente utilizado' %}<span class="ml">↑</span> {% endif -%}
+      {{ c.minutes }}{% if c.status == 'Suplente não utilizado' %}<span class="ml">·</span>{% endif -%}
+    </span></td>
+    {% endif %}
+  {% endfor %}
+  <td class="num" data-v="{{ p.minutes }}"><span class="cell" style="background:{{ p.minutes|heat(p.possible) }}"><b>{{ p.minutes }}</b></span></td>
+  <td class="num" data-v="{{ p.pct or 0 }}">{{ p.pct|pct }}</td>
+  <td class="num" data-v="{{ p.goals }}">{% if p.goals %}<span class="pill-g">{{ p.goals }}</span>{% else %}0{% endif %}</td>
+  <td class="num" data-v="{{ p.yellows }}">{% if p.yellows %}<span class="pill-y">{{ p.yellows }}</span>{% else %}0{% endif %}</td>
+  <td class="num" data-v="{{ p.appearances }}">{{ p.appearances }}</td>
+  <td class="num" data-v="{{ p.callups }}">{{ p.callups }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+<h2>Indicadores de utilização — {{ league }}</h2>
+{{ block(t.indicators) }}
+{% endblock %}

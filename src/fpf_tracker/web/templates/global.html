@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_indicators.html" import block %}
+{% set nav = 'global' %}
+{% block title %}Resumo global · {{ club.name }}{% endblock %}
+{% block body %}
+<h1>Resumo global</h1>
+{% if not g.players %}<div class="empty">Sem dados. <a href="/clubs/{{ club.id }}/upload">Carregue fichas de jogo</a>.</div>{% else %}
+<p class="lede">Uma linha por jogador verificado, somando todos os escalões. Os jogadores que aparecem em mais de uma competição estão assinalados.</p>
+<div class="table-wrap">
+<table data-sortable>
+<thead><tr>
+  <th class="name sort l">Jogador</th><th class="sort">Competições</th>
+  {% for lg in g.leagues %}<th class="sort" title="{{ lg }}">Min.<br>{{ lg }}</th>{% endfor %}
+  <th class="sort">Minutos (total)</th><th class="sort">Golos</th><th class="sort">Amarelos</th><th class="sort">Jogos c/ minutos</th><th class="sort">Convocatórias</th>
+</tr></thead>
+<tbody>
+{% for p in g.players %}
+<tr>
+  <td class="name" data-v="{{ p.name }}">{{ p.name }}</td>
+  <td class="c" data-v="{{ p.leagues|length }}">{{ p.leagues|length }}{% if p.multi_league %} <span class="ml" title="{{ p.leagues|join(' · ') }}">multi</span>{% endif %}</td>
+  {% for lg in g.leagues %}<td class="num" data-v="{{ p.minutes_by_league[lg] }}">{{ p.minutes_by_league[lg] }}</td>{% endfor %}
+  <td class="num" data-v="{{ p.minutes }}"><b>{{ p.minutes }}</b></td>
+  <td class="num" data-v="{{ p.goals }}">{% if p.goals %}<span class="pill-g">{{ p.goals }}</span>{% else %}0{% endif %}</td>
+  <td class="num" data-v="{{ p.yellows }}">{% if p.yellows %}<span class="pill-y">{{ p.yellows }}</span>{% else %}0{% endif %}</td>
+  <td class="num" data-v="{{ p.appearances }}">{{ p.appearances }}</td>
+  <td class="num" data-v="{{ p.callups }}">{{ p.callups }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+<h2>Indicadores de utilização</h2>
+<form method="get" class="inline" style="margin-bottom:1rem">
+  <div><label for="scope">Âmbito</label>
+  <select id="scope" name="scope" onchange="this.form.submit()">
+    <option value="">Todos os escalões</option>
+    {% for lg in g.leagues %}<option value="{{ lg }}" {{ 'selected' if scope == lg }}>{{ lg }}</option>{% endfor %}
+  </select></div><noscript><button type="submit">Aplicar</button></noscript>
+</form>
+{{ block(ind) }}
+<p class="muted small">Cada registo jogador-jogo conta uma só vez. Os valores globais usam numeradores e denominadores agregados, nunca médias de percentagens.</p>
+{% endif %}
+{% endblock %}

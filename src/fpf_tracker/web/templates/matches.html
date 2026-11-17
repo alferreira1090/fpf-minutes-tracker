@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% set nav = 'matches' %}
+{% block title %}Jogos · {{ club.name }}{% endblock %}
+{% block body %}
+<h1>Jogos</h1>
+{% if not matches %}<div class="empty">Sem jogos. <a href="/clubs/{{ club.id }}/upload">Carregue fichas de jogo</a>.</div>{% else %}
+<div class="table-wrap"><table data-sortable>
+<thead><tr><th class="sort l">Data</th><th class="sort l">Liga</th><th class="sort l">Jogo</th><th class="sort">Resultado</th><th class="sort">Duração (min)</th><th class="sort">Reconciliação</th><th class="sort">Avisos</th></tr></thead>
+<tbody>
+{% for m in matches %}
+<tr>
+  <td class="l mono" data-v="{{ m.match_date }}">{{ m.match_date|dmy }}</td>
+  <td class="l" data-v="{{ m.league }}">{{ m.league }}</td>
+  <td class="l" data-v="{{ m.opponent }}"><a href="/matches/{{ m.id }}">{{ m.home }} – {{ m.away }}</a></td>
+  <td class="num" data-v="{{ m.score_home }}">{{ m.score_home if m.score_home is not none else '—' }} – {{ m.score_away if m.score_away is not none else '—' }}</td>
+  <td class="num" data-v="{{ m.nominal + m.s1 + m.s2 }}">{{ m.nominal + m.s1 + m.s2 }}{% if m.override_json %} <span class="ml">corrigido</span>{% endif %}</td>
+  <td class="c" data-v="{{ 1 if m.expected_minutes == m.actual_minutes else 0 }}">{% if m.expected_minutes == m.actual_minutes %}<span class="status-ok">✓ {{ m.actual_minutes }}</span>{% else %}<span class="status-bad">{{ m.actual_minutes }} ≠ {{ m.expected_minutes }}</span>{% endif %}</td>
+  <td class="num" data-v="{{ m.warnings|length }}">{% if m.warnings %}<span class="status-warn">{{ m.warnings|length }}</span>{% else %}0{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endblock %}

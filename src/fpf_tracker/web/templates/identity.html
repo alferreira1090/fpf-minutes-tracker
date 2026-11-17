@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% set nav = 'identity' %}
+{% block title %}Identidades · {{ club.name }}{% endblock %}
+{% block body %}
+<h1>Auditoria de identidades</h1>
+<p class="lede">Os jogadores são reconhecidos pelo número FPF da fotografia e, em segundo lugar, pelo nome normalizado. Pessoas diferentes nunca são fundidas em silêncio: verifique aqui o que foi unido só pelo nome e os homónimos.</p>
+<h2>Fundidos só pelo nome</h2>
+{% if audit.merged_by_name %}
+<div class="table-wrap"><table><thead><tr><th class="l">Jogador</th><th class="l">Jogo</th><th class="l">Nota</th></tr></thead><tbody>
+{% for e in audit.merged_by_name %}<tr><td class="l">{{ e.display_name }}</td><td class="l">{{ e.match_date|dmy }} · {{ e.home }} – {{ e.away }}</td><td class="l muted">{{ e.note }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<p class="muted">Nenhuma fusão apenas por nome.</p>{% endif %}
+<h2>Homónimos (mesmo nome, números FPF diferentes)</h2>
+{% if audit.homonyms %}
+{% for grp in audit.homonyms %}<div class="card" style="margin-bottom:.6rem"><b>{{ grp[0].display_name }}</b> — {% for p in grp %}<span class="tag">FPF {{ p.fpf_id or 'sem n.º' }}</span> {% endfor %}</div>{% endfor %}
+{% else %}<p class="muted">Sem homónimos.</p>{% endif %}
+<h2>Jogadores em mais de uma competição</h2>
+{% if audit.multi_league %}
+<ul class="warns">{% for p in audit.multi_league %}<li><b>{{ p.display_name }}</b> <span class="muted small">{{ p.leagues|replace(',', ' · ') }}</span></li>{% endfor %}</ul>
+{% else %}<p class="muted">Nenhum.</p>{% endif %}
+{% endblock %}

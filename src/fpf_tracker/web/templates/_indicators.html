@@ -1,0 +1,21 @@
+{% macro block(ind) %}
+<div class="ind">
+  <div class="card">
+    <div class="eyebrow">Indicador 1</div>
+    <h3>Convocados que tiveram minutos</h3>
+    <div class="big">{{ ind.with_minutes.value|pct }}</div>
+    <div class="kv mono"><span>Numerador (jogaram)</span><span>{{ ind.with_minutes.numerator }}</span></div>
+    <div class="kv mono"><span>Denominador (convocatórias)</span><span>{{ ind.with_minutes.denominator }}</span></div>
+    <p class="def">Proporção das presenças nas convocatórias (titulares e suplentes) que resultaram em minutos de jogo.</p>
+  </div>
+  <div class="card">
+    <div class="eyebrow">Indicador 2</div>
+    <h3>Minutos médios por suplente convocado</h3>
+    <div class="big">{{ ind.bench_minutes.value|mins }}</div>
+    <div class="kv mono"><span>Numerador (minutos dos suplentes)</span><span>{{ ind.bench_minutes.numerator }}</span></div>
+    <div class="kv mono"><span>Denominador (suplentes convocados por jogo)</span><span>{{ ind.bench_minutes.denominator }}</span></div>
+    <div class="kv mono"><span>Dos quais não utilizados</span><span>{{ ind.bench_minutes.unused }}</span></div>
+    <p class="def">Inclui os suplentes não utilizados (0 minutos) e exclui todos os titulares, mesmo os substituídos. É um valor em minutos, não uma percentagem.</p>
+  </div>
+</div>
+{% endmacro %}

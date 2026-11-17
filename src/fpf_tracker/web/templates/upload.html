@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set nav = 'upload' %}
+{% block title %}Carregar jogos · {{ club.name }}{% endblock %}
+{% block body %}
+<h1>Carregar fichas de jogo</h1>
+<p class="lede">Guarde a página do jogo do Centro de Resultados da FPF como HTML e carregue-a aqui. O jogo é identificado pelo número FPF, por isso carregar de novo o mesmo jogo atualiza-o em vez de o duplicar.</p>
+<form method="post" action="/clubs/{{ club.id }}/upload" enctype="multipart/form-data">
+  <div class="dropzone" id="dropzone">
+    <p><b>Arraste os ficheiros HTML para aqui</b> ou escolha-os</p>
+    <input type="file" name="files" accept=".html,.htm,text/html" multiple required aria-label="Ficheiros HTML da FPF">
+    <p class="muted small" id="picked"></p>
+  </div>
+  <p><label for="lg">Escalão / liga (opcional — por omissão usa o nome da competição na ficha)</label>
+  <input id="lg" type="text" name="league_label" list="leagues" maxlength="80" size="40" placeholder="Sub-16">
+  <datalist id="leagues">{% for lg in leagues %}<option value="{{ lg.league }}">{% endfor %}</datalist></p>
+  <button type="submit">Carregar</button>
+</form>
+{% if outcomes %}
+<h2>Resultado</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="l">Ficheiro</th><th class="l">Jogo</th><th>Estado</th><th class="l">Detalhe</th></tr></thead>
+<tbody>
+{% for o in outcomes %}
+<tr>
+  <td class="l">{{ o.filename }}</td>
+  <td class="l">{% if o.home %}{{ o.home }} – {{ o.away }}{% else %}—{% endif %}</td>
+  <td class="c">
+    {% if o.status == 'imported' %}<span class="status-ok">Importado</span>
+    {% elif o.status == 'updated' %}<span class="status-ok">Atualizado</span>
+    {% elif o.status == 'needs_side' %}<span class="status-warn">Precisa de confirmação</span>
+    {% else %}<span class="status-bad">Rejeitado</span>{% endif %}
+  </td>
+  <td class="l" style="white-space:normal">
+    {{ o.message }}
+    {% if o.match_id %} <a href="/matches/{{ o.match_id }}">Ver jogo</a>{% if o.warnings %} · <span class="status-warn">{{ o.warnings }} aviso(s)</span>{% endif %}{% endif %}
+    {% if o.status == 'needs_side' %}
+    <form method="post" action="/clubs/{{ club.id }}/resolve" class="inline" style="margin-top:.5rem">
+      <input type="hidden" name="sha" value="{{ o.sha }}"><input type="hidden" name="filename" value="{{ o.filename }}">
+      <input type="hidden" name="league_label" value="{{ o.league or '' }}">
+      <div><label>{{ club.name }} é…</label>
+        <select name="side"><option value="home">{{ o.home }} (casa)</option><option value="away">{{ o.away }} (fora)</option></select></div>
+      <label style="margin:0"><input type="checkbox" name="remember" value="1" checked> Lembrar este nome como o clube</label>
+      <button type="submit" class="ghost">Confirmar</button>
+    </form>
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endblock %}
